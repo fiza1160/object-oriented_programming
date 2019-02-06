@@ -1,8 +1,6 @@
 import pygame
 import random
 
-SCREEN_DIM = (800, 600)
-
 
 class Vec2d:
 
@@ -34,7 +32,7 @@ class Vec2d:
 
 class Polyline:
 
-    def __init__(self, points=None, speeds=None):
+    def __init__(self, points=None, speeds=None, screen_dim=(800, 600)):
         if points is None:
             self.points = []
         else:
@@ -45,6 +43,8 @@ class Polyline:
         else:
             self.speeds = speeds
 
+        self.screen_dim = screen_dim
+
     def append(self, vec, speed):
         self.points.append(vec)
         self.speeds.append(speed)
@@ -52,9 +52,9 @@ class Polyline:
     def set_points(self):
         for p in range(len(self.points)):
             self.points[p] = self.points[p] + self.speeds[p]
-            if self.points[p].x > SCREEN_DIM[0] or self.points[p].x < 0:
+            if self.points[p].x > self.screen_dim[0] or self.points[p].x < 0:
                 self.speeds[p] = Vec2d(- self.speeds[p].x, self.speeds[p].y)
-            if self.points[p].y > SCREEN_DIM[1] or self.points[p].y < 0:
+            if self.points[p].y > self.screen_dim[1] or self.points[p].y < 0:
                 self.speeds[p] = Vec2d(self.speeds[p].x, -self.speeds[p].y)
 
     def draw_points(self, style="points", width=3, color=(255, 255, 255)):
@@ -109,7 +109,7 @@ def draw_help():
     data.append(["P", "Pause/Play"])
     data.append(["Num+", "More points"])
     data.append(["Num-", "Less points"])
-    data.append(["", ""])
+    data.append(["D", "Delete last point"])
     data.append([str(steps), "Current points"])
 
     pygame.draw.lines(gameDisplay, (255, 50, 50, 255), True, [
@@ -123,12 +123,13 @@ def draw_help():
 
 if __name__ == "__main__":
     pygame.init()
-    gameDisplay = pygame.display.set_mode(SCREEN_DIM)
+    screen_dim = (800, 600)
+    gameDisplay = pygame.display.set_mode(screen_dim)
     pygame.display.set_caption("MyScreenSaver")
 
     steps = 35
     working = True
-    polyline = Polyline()
+    polyline = Polyline(screen_dim=screen_dim)
     show_help = False
     pause = True
 
@@ -152,6 +153,9 @@ if __name__ == "__main__":
                     show_help = not show_help
                 if event.key == pygame.K_KP_MINUS:
                     steps -= 1 if steps > 1 else 0
+                if event.key == pygame.K_d:
+                    if len(polyline.points) > 0:
+                        polyline.points.pop()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 polyline.append(Vec2d(event.pos[0], event.pos[1]),
